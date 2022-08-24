@@ -58,8 +58,20 @@ class ConformerEnv(gym.Env):
             raise Exception('Unable to embed molecule with conformer using rdkit')
 
         self.conf = self.mol.GetConformer()
-        nonring, ring = TorsionFingerprints.CalculateTorsionLists(self.mol)
+        [self.mol.GetAtomWithIdx(i).SetProp("original_index", str(i)) for i in range(self.mol.GetNumAtoms())]
+        stripped_mol = Chem.rdmolops.RemoveHs(self.mol)
+
+        nonring, _ = TorsionFingerprints.CalculateTorsionLists(self.mol)
         self.nonring = [list(atoms[0]) for atoms, ang in nonring]
+            
+        original_to_stripped = {
+            int(stripped_mol.GetAtomWithIdx(reindex).GetProp("original_index")) : reindex 
+            for reindex in range(stripped_mol.GetNumAtoms())
+        }
+        self.nonring_reindexed = [
+            [original_to_stripped[original] for original in atom_group] 
+            for atom_group in self.nonring
+        ]
 
         self.reset()
 

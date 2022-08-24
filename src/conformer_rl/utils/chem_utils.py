@@ -4,39 +4,82 @@ Chemistry Utilities
 
 Chemistry and molecule utility functions.
 """
+import torch
 import numpy as np
+import openmm
+import openmm.app as app
+import openmm.unit as u
 import bisect
 from rdkit.Chem import TorsionFingerprints
 import rdkit.Chem.AllChem as Chem
+from rdkit.Geometry import Point3D
 
 from typing import Tuple, List
 import logging
 
+simulator = None
+
+def seed(mol_name):
+    toppar = [
+        "src/conformer_rl/environments/environment_components/toppar/par_all36_prot.prm", 
+        "src/conformer_rl/environments/environment_components/toppar/top_all36_prot.rtf",
+        "src/conformer_rl/environments/environment_components/toppar/toppar_water_ions.str",
+    ]
+    psf = f"src/conformer_rl/molecule_generation/chignolin/{mol_name}.psf" # TODO: expand to non-chignolin
+
+    openmm_toppar = app.CharmmParameterSet(*toppar)
+    openmm_psf = app.CharmmPsfFile(psf)
+    openmm_system = openmm_psf.createSystem(openmm_toppar)
+
+    integrator = openmm.LangevinMiddleIntegrator(300 * u.kelvin, 1 / u.picosecond, 0.004 * u.picoseconds)
+
+    global simulator
+    if torch.cuda.is_available():
+        platform = openmm.Platform.getPlatformByName("CUDA")
+        prop = dict(CudaPrecision="mixed", DeviceIndex="0")#, DisablePmeStream="true")
+        simulator = app.Simulation(openmm_psf.topology, openmm_system, integrator, platform, prop)
+    else:
+        platform = openmm.Platform.getPlatformByName("CPU")
+        simulator = app.Simulation(openmm_psf.topology, openmm_system, integrator, platform)
+
+def np_to_mm(arr: np.ndarray, unit: openmm.unit=u.angstrom):
+    wrapped_val = openmm.unit.quantity.Quantity(arr, unit)
+    return wrapped_val
+
+def optimize_conf(mol, conf_id):
+    conf = mol.GetConformer(conf_id)
+    positions = np_to_mm(conf.GetPositions())
+    simulator.context.setPositions(positions)
+    simulator.minimizeEnergy(maxIterations=500)
+
+    # CHARMM returns all of its positions in nm, so we have to convert back to Angstroms for RDKit
+    optimized_positions_nm = simulator.context.getState(getPositions=True).getPositions()
+    optimized_positions = optimized_positions_nm.in_units_of(u.angstrom) # match RDKit/MMFF convention
+
+    for i, pos in enumerate(optimized_positions):
+        conf.SetAtomPosition(i, Point3D(pos.x, pos.y, pos.z))
+
+def get_conformer_energy(mol: Chem.Mol, confId: int = None):
+    if confId is None:
+        confId = mol.GetNumConformers() - 1
+    conf = mol.GetConformer(confId)
+
+    positions = np_to_mm(conf.GetPositions())
+    simulator.context.setPositions(positions)
+    energy_kj = simulator.context.getState(getEnergy=True).getPotentialEnergy()
+    energy_kcal = energy_kj.in_units_of(u.kilocalories_per_mole) # match RDKit/MMFF convention
+    return energy_kcal._value
 
 def get_conformer_energies(mol: Chem.Mol) -> List[float]:
     """Returns a list of energies for each conformer in `mol`.
     """
     energies = []
     Chem.MMFFSanitizeMolecule(mol)
-    mmff_props = Chem.MMFFGetMoleculeProperties(mol)
     for conf in mol.GetConformers():
-        ff = Chem.MMFFGetMoleculeForceField(mol, mmff_props, confId=conf.GetId())
-        energy = ff.CalcEnergy()
+        energy = get_conformer_energy(mol, conf.GetId())
         energies.append(energy)
     
     return np.asarray(energies, dtype=float)
-
-def get_conformer_energy(mol: Chem.Mol, confId: int = None) -> float:
-    """Returns the energy of the conformer with `confId` in `mol`.
-    """
-    if confId is None:
-        confId = mol.GetNumConformers() - 1
-    Chem.MMFFSanitizeMolecule(mol)
-    mmff_props = Chem.MMFFGetMoleculeProperties(mol)
-    ff = Chem.MMFFGetMoleculeForceField(mol, mmff_props, confId=confId)
-    energy = ff.CalcEnergy()
-
-    return energy
 
 def prune_last_conformer(mol: Chem.Mol, tfd_thresh: float, energies: List[float]) -> Tuple[Chem.Mol, List[float]]:
     """Prunes the last conformer of the molecule.
@@ -163,7 +206,10 @@ def calculate_normalizers(mol: Chem.Mol, num_confs: int = 200, pruning_thresh: f
     confslist = Chem.EmbedMultipleConfs(mol, numConfs = num_confs, useRandomCoords=True)
     if (len(confslist) < 1):
         raise Exception('Unable to embed molecule with conformer using rdkit')
-    Chem.MMFFOptimizeMoleculeConfs(mol, nonBondedThresh=10.)
+    
+    for conf_id in range(mol.GetNumConformers()):
+        optimize_conf(mol, conf_id)
+
     mol = prune_conformers(mol, pruning_thresh)
     energys = get_conformer_energies(mol)
     E0 = energys.min()

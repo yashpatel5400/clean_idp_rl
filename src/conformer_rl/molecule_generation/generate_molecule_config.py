@@ -119,7 +119,7 @@ def config_from_rdkit(mol: Chem.rdchem.Mol, num_conformers: int, calc_normalizer
     """
 
     config = MolConfig()
-    mol = _preprocess_mol(mol)
+    config.mol_name = ""
     config.mol = mol
     config.num_conformers = num_conformers
     if calc_normalizers:

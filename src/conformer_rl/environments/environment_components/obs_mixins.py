@@ -51,7 +51,7 @@ class GraphObsMixin:
         data = NormalizeRotation()(data)
         data.x = data.pos
         data = Batch.from_data_list([data])
-        return data, self.nonring
+        return data, self.nonring_reindexed
 
 class AtomTypeGraphObsMixin:
     """Represents molecule as a PyTorch Geometric graph where each node contains information about the atom's element.
@@ -86,7 +86,7 @@ class AtomTypeGraphObsMixin:
         data = Center()(data)
         data = NormalizeRotation()(data)
         data = Batch.from_data_list([data])
-        return data, self.nonring
+        return data, self.nonring_reindexed
 
 
 class AtomCoordsTypeGraphObsMixin:
@@ -123,4 +123,4 @@ class AtomCoordsTypeGraphObsMixin:
         data = NormalizeRotation()(data)
         data.x[:,-3:] = data.pos
         data = Batch.from_data_list([data])
-        return data, self.nonring
+        return data, self.nonring_reindexed
