@@ -23,7 +23,7 @@ if __name__ == '__main__':
     utils.set_one_thread()
 
     # Create mol_configs for the curriculum
-    chignolin_fasta = "GYDPETGTWG"
+    chignolin_fasta = "YYDPETGTWY" # "GYDPETGTWG"
     curriculum_lens = [3, 5, 7, 10]
 
     mol_configs = []
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     config.network = RTGNRecurrent(6, 128, edge_dim=6, node_dim=5).to(device)
 
     # Batch Hyperparameters
-    config.max_steps = 100000
+    config.max_steps = 200001
 
     # training Hyperparameters
     lr = 5e-6 * np.sqrt(10)
@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     # curriculum Hyperparameters
     config.curriculum_agent_buffer_len = 20
-    config.curriculum_agent_reward_thresh = 0.4
+    config.curriculum_agent_reward_thresh = 0.2
     config.curriculum_agent_success_rate = 0.7
     config.curriculum_agent_fail_rate = 0.2
 

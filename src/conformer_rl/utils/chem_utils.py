@@ -20,27 +20,35 @@ import logging
 simulator = None
 
 def seed(mol_name):
-    toppar = [
-        "src/conformer_rl/environments/environment_components/toppar/par_all36_prot.prm", 
-        "src/conformer_rl/environments/environment_components/toppar/top_all36_prot.rtf",
-        "src/conformer_rl/environments/environment_components/toppar/toppar_water_ions.str",
-    ]
-    psf = f"src/conformer_rl/molecule_generation/chignolin/{mol_name}.psf" # TODO: expand to non-chignolin
+    # toppar = [
+    #     "src/conformer_rl/environments/environment_components/toppar/par_all36_prot.prm", 
+    #     "src/conformer_rl/environments/environment_components/toppar/top_all36_prot.rtf",
+    #     "src/conformer_rl/environments/environment_components/toppar/toppar_water_ions.str",
+    # ]
+    # psf = f"src/conformer_rl/molecule_generation/chignolin/{mol_name}.psf" # TODO: expand to non-chignolin
 
-    openmm_toppar = app.CharmmParameterSet(*toppar)
-    openmm_psf = app.CharmmPsfFile(psf)
-    openmm_system = openmm_psf.createSystem(openmm_toppar)
+    # openmm_toppar = app.CharmmParameterSet(*toppar)
+    # openmm_psf = app.CharmmPsfFile(psf)
+    # openmm_system = openmm_psf.createSystem(openmm_toppar)
 
-    integrator = openmm.LangevinMiddleIntegrator(300 * u.kelvin, 1 / u.picosecond, 0.004 * u.picoseconds)
+    # integrator = openmm.LangevinMiddleIntegrator(300 * u.kelvin, 1 / u.picosecond, 0.004 * u.picoseconds)
+
+    pdb = app.pdbfile.PDBFile(f"src/conformer_rl/molecule_generation/chignolin/{mol_name}.pdb")
+    forcefield = app.forcefield.ForceField("amber99sbildn.xml", "tip3p.xml")
+    system = forcefield.createSystem(
+        pdb.topology, nonbondedMethod = app.forcefield.NoCutoff, constraints = app.forcefield.HBonds)
+    integrator = openmm.VerletIntegrator(0.002 * u.picoseconds)
 
     global simulator
     if torch.cuda.is_available():
         platform = openmm.Platform.getPlatformByName("CUDA")
         prop = dict(CudaPrecision="mixed", DeviceIndex="0")#, DisablePmeStream="true")
-        simulator = app.Simulation(openmm_psf.topology, openmm_system, integrator, platform, prop)
+        simulator = app.Simulation(pdb.topology, system, integrator, platform, prop)
+        # simulator = app.Simulation(openmm_psf.topology, openmm_system, integrator, platform, prop)
     else:
         platform = openmm.Platform.getPlatformByName("CPU")
-        simulator = app.Simulation(openmm_psf.topology, openmm_system, integrator, platform)
+        simulator = app.Simulation(pdb.topology, system, integrator, platform, prop)
+        # simulator = app.Simulation(openmm_psf.topology, openmm_system, integrator, platform)
 
 def np_to_mm(arr: np.ndarray, unit: openmm.unit=u.angstrom):
     wrapped_val = openmm.unit.quantity.Quantity(arr, unit)
@@ -50,6 +58,7 @@ def optimize_conf(mol, conf_id):
     conf = mol.GetConformer(conf_id)
     positions = np_to_mm(conf.GetPositions())
     simulator.context.setPositions(positions)
+    simulator.context.setVelocitiesToTemperature(300 * u.kelvin)
     simulator.minimizeEnergy(maxIterations=500)
 
     # CHARMM returns all of its positions in nm, so we have to convert back to Angstroms for RDKit
@@ -66,6 +75,7 @@ def get_conformer_energy(mol: Chem.Mol, confId: int = None):
 
     positions = np_to_mm(conf.GetPositions())
     simulator.context.setPositions(positions)
+    simulator.context.setVelocitiesToTemperature(300 * u.kelvin)
     energy_kj = simulator.context.getState(getEnergy=True).getPotentialEnergy()
     energy_kcal = energy_kj.in_units_of(u.kilocalories_per_mole) # match RDKit/MMFF convention
     return energy_kcal._value

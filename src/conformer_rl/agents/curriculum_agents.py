@@ -78,7 +78,8 @@ class ExternalCurriculumAgentMixin():
         if len(self.reward_buffer) >= self.curriculum_buffer_len:
             rewbuf = np.array(self.reward_buffer)
             pass_rate = (rewbuf >= self.curriculum_reward_thresh).mean()
-
+            logging.debug(f'pass rate: {pass_rate}')
+            
             if pass_rate > self.curriculum_success_rate:
                 self.task.env_method('increase_level')
                 self.reward_buffer.clear()

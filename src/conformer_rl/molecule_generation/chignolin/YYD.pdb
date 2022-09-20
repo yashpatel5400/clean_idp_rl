@@ -1,0 +1,59 @@
+REMARK original generated coordinate pdb file
+ATOM      1  N   TYR A   1       2.034  -0.391  -0.671  1.00  0.00      AP1  N
+ATOM      2  HT1 TYR A   1       2.917  -0.491  -1.129  0.00  0.00      AP1   
+ATOM      3  HT2 TYR A   1       1.672   0.528  -0.825  0.00  0.00      AP1   
+ATOM      4  HT3 TYR A   1       1.391  -1.073  -1.018  0.00  0.00      AP1   
+ATOM      5  CA  TYR A   1       2.232  -0.613   0.882  1.00  0.00      AP1  C
+ATOM      6  HA  TYR A   1       2.483  -1.638   1.128  0.00  0.00      AP1   
+ATOM      7  CB  TYR A   1       2.655   0.970   1.158  1.00  0.00      AP1  C
+ATOM      8  HB1 TYR A   1       1.826   1.632   0.824  0.00  0.00      AP1   
+ATOM      9  HB2 TYR A   1       2.805   1.153   2.244  0.00  0.00      AP1   
+ATOM     10  CG  TYR A   1       3.867   1.041   0.284  1.00  0.00      AP1  C
+ATOM     11  CD1 TYR A   1       5.120   0.748   0.726  1.00  0.00      AP1  C
+ATOM     12  HD1 TYR A   1       5.272   0.458   1.757  0.00  0.00      AP1   
+ATOM     13  CE1 TYR A   1       6.235   0.821  -0.077  1.00  0.00      AP1  C
+ATOM     14  HE1 TYR A   1       7.212   0.586   0.317  0.00  0.00      AP1   
+ATOM     15  CZ  TYR A   1       6.121   1.204  -1.400  1.00  0.00      AP1  C
+ATOM     16  OH  TYR A   1       7.238   1.287  -2.242  1.00  0.00      AP1  O
+ATOM     17  HH  TYR A   1       6.920   1.499  -3.122  0.00  0.00      AP1   
+ATOM     18  CD2 TYR A   1       3.726   1.429  -1.041  1.00  0.00      AP1  C
+ATOM     19  HD2 TYR A   1       2.753   1.709  -1.422  0.00  0.00      AP1   
+ATOM     20  CE2 TYR A   1       4.851   1.497  -1.835  1.00  0.00      AP1  C
+ATOM     21  HE2 TYR A   1       4.763   1.817  -2.863  0.00  0.00      AP1   
+ATOM     22  C   TYR A   1       0.684  -0.390   1.289  1.00  0.00      AP1  C
+ATOM     23  O   TYR A   1       0.525  -0.437   2.552  1.00  0.00      AP1  O
+ATOM     24  N   TYR A   2      -0.299  -0.182   0.356  1.00  0.00      AP1  N
+ATOM     25  HN  TYR A   2      -0.363  -0.119  -0.639  0.00  0.00      AP1   
+ATOM     26  CA  TYR A   2      -1.678  -0.001   1.117  1.00  0.00      AP1  C
+ATOM     27  HA  TYR A   2      -1.561   0.081   2.191  0.00  0.00      AP1   
+ATOM     28  CB  TYR A   2      -2.445   0.676  -0.197  1.00  0.00      AP1  C
+ATOM     29  HB1 TYR A   2      -2.417  -0.043  -1.045  0.00  0.00      AP1   
+ATOM     30  HB2 TYR A   2      -3.515   0.874   0.031  0.00  0.00      AP1   
+ATOM     31  CG  TYR A   2      -1.662   1.881  -0.499  1.00  0.00      AP1  C
+ATOM     32  CD1 TYR A   2      -0.622   1.780  -1.380  1.00  0.00      AP1  C
+ATOM     33  HD1 TYR A   2      -0.384   0.823  -1.823  0.00  0.00      AP1   
+ATOM     34  CE1 TYR A   2       0.113   2.890  -1.669  1.00  0.00      AP1  C
+ATOM     35  HE1 TYR A   2       0.943   2.835  -2.358  0.00  0.00      AP1   
+ATOM     36  CZ  TYR A   2      -0.149   4.119  -1.106  1.00  0.00      AP1  C
+ATOM     37  OH  TYR A   2       0.628   5.219  -1.432  1.00  0.00      AP1  O
+ATOM     38  HH  TYR A   2       0.244   5.982  -0.996  0.00  0.00      AP1   
+ATOM     39  CD2 TYR A   2      -1.962   3.081   0.086  1.00  0.00      AP1  C
+ATOM     40  HD2 TYR A   2      -2.762   3.144   0.811  0.00  0.00      AP1   
+ATOM     41  CE2 TYR A   2      -1.206   4.188  -0.219  1.00  0.00      AP1  C
+ATOM     42  HE2 TYR A   2      -1.423   5.133   0.257  0.00  0.00      AP1   
+ATOM     43  C   TYR A   2      -2.213  -1.486   0.811  1.00  0.00      AP1  C
+ATOM     44  O   TYR A   2      -1.594  -2.282   0.161  1.00  0.00      AP1  O
+ATOM     45  N   ASP A   3      -3.456  -1.715   1.391  1.00  0.00      AP1  N
+ATOM     46  HN  ASP A   3      -4.011  -1.090   1.933  0.00  0.00      AP1   
+ATOM     47  CA  ASP A   3      -4.121  -3.112   1.205  1.00  0.00      AP1  C
+ATOM     48  HA  ASP A   3      -5.027  -3.219   1.790  0.00  0.00      AP1   
+ATOM     49  CB  ASP A   3      -3.564  -3.386  -0.322  1.00  0.00      AP1  C
+ATOM     50  HB1 ASP A   3      -2.456  -3.357  -0.317  0.00  0.00      AP1   
+ATOM     51  HB2 ASP A   3      -3.885  -4.383  -0.682  0.00  0.00      AP1   
+ATOM     52  CG  ASP A   3      -4.125  -2.283  -1.125  1.00  0.00      AP1  C
+ATOM     53  OD1 ASP A   3      -4.853  -1.435  -0.602  1.00  0.00      AP1  O
+ATOM     54  OD2 ASP A   3      -3.783  -2.273  -2.468  1.00  0.00      AP1  O
+ATOM     55  C   ASP A   3      -2.996  -3.996   1.929  1.00  0.00      AP1  C
+ATOM     56  OT1 ASP A   3      -2.266  -3.394   2.251  0.00  0.00      AP1   
+ATOM     57  OT2 ASP A   3      -3.270  -4.957   1.901  0.00  0.00      AP1   
+END
