@@ -94,7 +94,8 @@ class CurriculumConformerEnv(ConformerEnv):
 
         self.episode_info['mol'] = Chem.Mol(self.mol)
         self.episode_info['mol'].RemoveAllConformers()
-
+        self.episode_info['curriculum_level'] = self.curriculum_max_index
+        
         obs = self._obs()
         return obs
 

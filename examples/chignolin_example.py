@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 import torch
 import os
 import pickle
@@ -18,8 +19,14 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+import argparse
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--curriculum_agent_reward_thresh", type=float)
+    parser.add_argument("--curriculum_agent_success_rate", type=float)
+    args = parser.parse_args()
+
     utils.set_one_thread()
 
     # Create mol_configs for the curriculum
@@ -32,6 +39,7 @@ if __name__ == '__main__':
         filename = f"{curriculum_fasta}.pkl"
         if os.path.exists(filename):
             with open(filename, "rb") as f:
+                print(f"Loading {filename}...")
                 mol_config = pickle.load(f)
         else:
             seed(curriculum_fasta)
@@ -45,10 +53,10 @@ if __name__ == '__main__':
     
     chignolin_mol = generate_chignolin(chignolin_fasta)
     seed(chignolin_fasta)
-    eval_mol_config = config_from_rdkit(chignolin_mol, num_conformers=1000, calc_normalizers=True)
+    eval_mol_config = copy.deepcopy(mol_configs[-1]) 
+    # eval_mol_config = config_from_rdkit(chignolin_mol, num_conformers=1000, calc_normalizers=True)
 
     config = Config()
-    config.tag = 'curriculum_chignolin'
     config.network = RTGNRecurrent(6, 128, edge_dim=6, node_dim=5).to(device)
 
     # Batch Hyperparameters
@@ -73,9 +81,10 @@ if __name__ == '__main__':
 
     # curriculum Hyperparameters
     config.curriculum_agent_buffer_len = 20
-    config.curriculum_agent_reward_thresh = 0.2
-    config.curriculum_agent_success_rate = 0.7
+    config.curriculum_agent_reward_thresh = args.curriculum_agent_reward_thresh
+    config.curriculum_agent_success_rate = args.curriculum_agent_success_rate
     config.curriculum_agent_fail_rate = 0.2
+    config.tag = f"curriculum_chignolin_reward={config.curriculum_agent_reward_thresh}_success={config.curriculum_agent_success_rate}"
 
     agent = PPORecurrentExternalCurriculumAgent(config)
     agent.run_steps()
