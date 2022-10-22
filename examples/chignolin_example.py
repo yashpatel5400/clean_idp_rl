@@ -23,7 +23,7 @@ if __name__ == '__main__':
     utils.set_one_thread()
 
     # Create mol_configs for the curriculum
-    chignolin_fasta = "YYDPETGTWY" # "GYDPETGTWG"
+    chignolin_fasta = "YYDPETGTWY"
     curriculum_lens = [3, 5, 7, 10]
 
     mol_configs = []
