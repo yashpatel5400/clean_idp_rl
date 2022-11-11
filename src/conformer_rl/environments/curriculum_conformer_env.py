@@ -44,13 +44,15 @@ class CurriculumConformerEnv(ConformerEnv):
         more difficult tasks.
     """
 
-    def __init__(self, mol_configs: List[MolConfig]):
+    def __init__(self, mol_configs: List[MolConfig], tag = None):
         gym.Env.__init__(self)
         logging.debug('initializing curriculum conformer environment')
         self.configs = copy.deepcopy(mol_configs)
         self.curriculum_max_index = 1
 
         self.config = self.configs[0]
+        self.tag = tag
+
         self.mol = self.config.mol
         self.mol.RemoveAllConformers()
         if Chem.EmbedMolecule(self.mol, randomSeed=self.config.seed, useRandomCoords=True) == -1:
@@ -63,8 +65,6 @@ class CurriculumConformerEnv(ConformerEnv):
     def reset(self) -> object:
         """Resets the environment and returns the observation of the environment.
         """
-        logging.debug('reset called')
-
         self.total_reward = 0
         self.current_step = 0
         self.step_info = {}
@@ -78,7 +78,8 @@ class CurriculumConformerEnv(ConformerEnv):
             p[-1] = 0.5
             index = np.random.choice(self.curriculum_max_index, p=p)
 
-        logging.debug(f'Current Curriculum Molecule Index: {index}')
+        with open(f"steps_{self.tag}.txt", "a") as f:
+            f.writelines([f'Current Curriculum Molecule Index: {index}\n'])
 
         # set up current molecule
         mol_config = self.configs[index]

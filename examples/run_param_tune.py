@@ -9,7 +9,7 @@ curriculum_agent_reward_threshs = [
 curriculum_agent_success_rates = [
     .5, .55, .6, .65
 ]
-gpus_to_use = [0, 1, 3, 4, 5]
+gpus_to_use = [3,5,6,7]
 
 scheduling_thresh = 4000
 

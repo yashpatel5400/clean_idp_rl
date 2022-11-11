@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/yppatel/misc/clean_idp_rl/src/")
+
 import numpy as np
 import copy
 import torch
@@ -54,7 +57,6 @@ if __name__ == '__main__':
     chignolin_mol = generate_chignolin(chignolin_fasta)
     seed(chignolin_fasta)
     eval_mol_config = copy.deepcopy(mol_configs[-1]) 
-    # eval_mol_config = config_from_rdkit(chignolin_mol, num_conformers=1000, calc_normalizers=True)
 
     config = Config()
     config.network = RTGNRecurrent(6, 128, edge_dim=6, node_dim=5).to(device)
@@ -74,7 +76,8 @@ if __name__ == '__main__':
     config.ppo_ratio_clip = 0.2
 
     # Task Settings
-    config.train_env = Task('GibbsScoreLogPruningCurriculumEnv-v0', concurrency=True, num_envs=10, seed=np.random.randint(0,1e5), mol_configs=mol_configs)
+    tag = f"curriculum_chignolin_reward={config.curriculum_agent_reward_thresh}_success={config.curriculum_agent_success_rate}"
+    config.train_env = Task('GibbsScoreLogPruningCurriculumEnv-v0', concurrency=True, num_envs=1, seed=np.random.randint(0,1e5), mol_configs=mol_configs, tag=tag)
     config.eval_env = Task('GibbsScoreLogPruningEnv-v0', seed=np.random.randint(0,7e4), mol_config=eval_mol_config)
     config.eval_interval = 20000
     config.eval_episodes = 2
@@ -84,7 +87,7 @@ if __name__ == '__main__':
     config.curriculum_agent_reward_thresh = args.curriculum_agent_reward_thresh
     config.curriculum_agent_success_rate = args.curriculum_agent_success_rate
     config.curriculum_agent_fail_rate = 0.2
-    config.tag = f"curriculum_chignolin_reward={config.curriculum_agent_reward_thresh}_success={config.curriculum_agent_success_rate}"
+    config.tag = tag
 
     agent = PPORecurrentExternalCurriculumAgent(config)
     agent.run_steps()

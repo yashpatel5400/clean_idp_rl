@@ -69,10 +69,10 @@ class BaseAgent:
                 mkdir(path)
                 self.save(path + '/' +  str(self.total_steps) + '.model')
 
-            if config.eval_interval > 0 and self.total_steps % config.eval_interval == 0:
-                eval_start = time.time()
-                self.evaluate()
-                logging.debug(f'Eval at step {self.total_steps}, eval duration: {time.time() - eval_start} seconds')
+            # if config.eval_interval > 0 and self.total_steps % config.eval_interval == 0:
+            #     eval_start = time.time()
+            #     self.evaluate()
+            #     logging.debug(f'Eval at step {self.total_steps}, eval duration: {time.time() - eval_start} seconds')
 
             step_start = time.time()
             logging.debug(f'Starting agent step {self.total_steps}')
