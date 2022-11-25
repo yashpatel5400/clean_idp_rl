@@ -35,7 +35,7 @@ def create_branched(i):
     m = Chem.rdmolops.AddHs(e.GetMol())
     AllChem.EmbedMolecule(m)
     md_sim = MDSimulator(m)
-    
+
     AllChem.EmbedMultipleConfs(m, numConfs=200, numThreads=-1)
     md_sim.optimize_confs(m)
     m = md_sim.prune_conformers(m, 0.05)
@@ -56,11 +56,14 @@ def create_branched(i):
     with open(f'gen_out/{rbn}_{i}.json', 'w') as fp:
         json.dump(out, fp)
 
+def create_branched_wrapper(args):
+    return create_branched(*args)
+
 if __name__ == "__main__":
     multiprocessing.set_start_method('spawn')
     p = Pool(multiprocessing.cpu_count())
     branched_args = [(i,) for i in range(10)]
-    for i in range(10_000):
-        res = p.apply_async(create_branched, (i,))
-    res.get()
+    p.map(create_branched_wrapper, branched_args)
+    p.close()
     p.join()
+    

@@ -22,7 +22,7 @@ from rdkit.Chem import AllChem
 from openff.toolkit import ForceField
 from openff.toolkit.topology import Molecule
 from openmmforcefields.generators import SystemGenerator
-        
+
 class MDSimulator:
     def __init__(self, rd_mol):
         Chem.rdmolops.AssignAtomChiralTagsFromStructure(rd_mol)
@@ -140,6 +140,19 @@ class MDSimulator:
             new.AddConformer(conf, assignId=True)
 
         return new
+
+class MDSimulatorPDB(MDSimulator):
+    def __init__(self, rd_pdb):
+        pdb = app.pdbfile.PDBFile(rd_pdb)
+        forcefield = app.forcefield.ForceField("amber99sbildn.xml", "tip3p.xml")
+        system = forcefield.createSystem(
+            pdb.topology, nonbondedMethod = app.forcefield.NoCutoff, constraints = app.forcefield.HBonds)
+        integrator = openmm.VerletIntegrator(0.002 * u.picoseconds)
+        platform = openmm.Platform.getPlatformByName("CUDA")
+        # start at 1, since we assume 0 is being used by PyTorch, to avoid GPU memory issues
+        assigned_gpu = np.random.randint(1, torch.cuda.device_count())
+        prop = dict(CudaPrecision="mixed", DeviceIndex=f"{assigned_gpu}")
+        self.simulator = app.Simulation(pdb.topology, system, integrator, platform, prop)
 
 # class ConformerGeneratorCustom(conformers.ConformerGenerator):
 #     # pruneRmsThresh=-1 means no pruning done here

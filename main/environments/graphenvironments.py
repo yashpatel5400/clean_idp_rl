@@ -341,6 +341,7 @@ class SetGibbs(gym.Env):
         self.temp_normal = temp_normal
         self.all_files = glob.glob(f'{folder_name}*.json')
         self.folder_name = folder_name
+        self.active_fn = None
 
         if sort_by_size:
             self.all_files.sort(key=os.path.getsize)
@@ -372,12 +373,14 @@ class SetGibbs(gym.Env):
                 self.total = 1.0
 
             if 'mol' in obj:
-                self.mol = Chem.MolFromSmiles(obj['mol'])
-                self.mol = Chem.AddHs(self.mol)
+                # self.mol = Chem.MolFromSmiles(obj['mol'])
+                # self.mol = Chem.AddHs(self.mol)
+                print(self.active_fn)
+                self.mol = Chem.rdmolfiles.MolFromPDBFile(self.active_fn, removeHs=False)
                 res = AllChem.EmbedMultipleConfs(self.mol, numConfs=1)
                 if not len(res):
                     continue
-                self.md_sim = MDSimulator(self.mol)
+                self.md_sim = MDSimulatorPDB(self.active_fn)
                 res = self.md_sim.optimize_confs(self.mol)
                 self.conf = self.mol.GetConformer(id=0)
 
@@ -472,6 +475,7 @@ class SetGibbs(gym.Env):
 
     def molecule_choice(self):
         cjson = np.random.choice(self.all_files)
+        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/chignolin", f"{os.path.basename(cjson).split('.')[0]}.pdb")
         with open(cjson) as fp:
             obj = json.load(fp)
         return obj
@@ -494,12 +498,13 @@ class SetGibbs(gym.Env):
                 self.total = 1.0
 
             if 'mol' in obj:
-                self.mol = Chem.MolFromSmiles(obj['mol'])
-                self.mol = Chem.AddHs(self.mol)
+                # self.mol = Chem.MolFromSmiles(obj['mol'])
+                # self.mol = Chem.AddHs(self.mol)
+                self.mol = Chem.rdmolfiles.MolFromPDBFile(self.active_fn, removeHs=False)
                 res = AllChem.EmbedMultipleConfs(self.mol, numConfs=1)
                 if not len(res):
                     continue
-                self.md_sim = MDSimulator(self.mol)
+                self.md_sim = MDSimulatorPDB(self.active_fn)
                 res = self.md_sim.optimize_confs(self.mol)
                 self.conf = self.mol.GetConformer(id=0)
             else:
@@ -785,7 +790,8 @@ class SetCurriculaExtern(SetGibbs):
             cjson = self.all_files[0]
 
         print(cjson, '\n\n\n\n')
-
+        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/chignolin", f"{os.path.basename(cjson).split('.')[0]}.pdb")
+        
         with open(cjson) as fp:
             obj = json.load(fp)
         return obj
@@ -947,3 +953,11 @@ class LigninPruningSkeletonEvalSgldFinalLong015(UniqueSetGibbs, SetGibbsSkeleton
 class LigninPruningSkeletonEvalSgldFinalLong015Save(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
         super(LigninPruningSkeletonEvalSgldFinalLong015Save, self).__init__('lignin_eval_final_sgld/', eval=True, temp_normal=0.2519, sort_by_size=False, pruning_thresh=0.15)
+
+class ChignolinAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, PruningSetLogGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
+    def __init__(self):
+        super(ChignolinAllSetPruningLogSkeletonCurriculumLong, self).__init__('chignolin_out/')
+
+class ChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
+    def __init__(self):
+        super(ChignolinPruningSkeletonValidationLong, self).__init__('chignolin_eval_sample/')
