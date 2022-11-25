@@ -13,13 +13,10 @@ def create_t_alkane(i):
     m = Chem.rdmolops.AddHs(m)
 
     AllChem.EmbedMultipleConfs(m, numConfs=2000, numThreads=-1)
-    Chem.AllChem.MMFFOptimizeMoleculeConfs(m, numThreads=-1)
+    md_sim = MDSimulator(m)
+    md_sim.optimize_confs(m, numThreads=-1)
 
-    confgen = ConformerGeneratorCustom(max_conformers=1,
-                      force_field='mmff',
-                     pool_multiplier=1)
-
-    energys = confgen.get_conformer_energies(m)
+    energys = md_sim.get_conformer_energies(m)
     argsorted = np.argsort(energys)
     print(len(TorsionFingerprints.CalculateTorsionLists(m)[0]))
     standard = energys.min()

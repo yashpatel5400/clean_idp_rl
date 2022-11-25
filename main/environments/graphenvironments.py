@@ -112,7 +112,7 @@ def mol2vecstupidsimple(mol):
     return data
 
 def mol2vecskeleton(mol):
-    mol = Chem.rdmolops.RemoveHs(mol)
+    # mol = Chem.rdmolops.RemoveHs(mol)
     conf = mol.GetConformer(id=-1)
     atoms = mol.GetAtoms()
     bonds = mol.GetBonds()
@@ -137,7 +137,7 @@ def mol2vecskeleton(mol):
     return data
 
 def mol2vecskeleton_features(mol):
-    mol = Chem.rdmolops.RemoveHs(mol)
+    # mol = Chem.rdmolops.RemoveHs(mol)
     conf = mol.GetConformer(id=-1)
     atoms = mol.GetAtoms()
     bonds = mol.GetBonds()
@@ -161,7 +161,7 @@ def mol2vecskeleton_features(mol):
     return data
 
 def mol2vecdense(mol):
-    mol = Chem.rdmolops.RemoveHs(mol)
+    # mol = Chem.rdmolops.RemoveHs(mol)
     conf = mol.GetConformer(id=-1)
     atoms = mol.GetAtoms()
     bonds = mol.GetBonds()
@@ -197,7 +197,7 @@ def mol2vecdense(mol):
     return data
 
 def mol2vecbasic(mol):
-    mol = Chem.rdmolops.RemoveHs(mol)
+    # mol = Chem.rdmolops.RemoveHs(mol)
     conf = mol.GetConformer(id=-1)
     atoms = mol.GetAtoms()
     bonds = mol.GetBonds()
@@ -225,7 +225,7 @@ def mol2vecbasic(mol):
     return data
 
 def mol2vecskeletonpoints(mol):
-    mol = Chem.rdmolops.RemoveHs(mol)
+    # mol = Chem.rdmolops.RemoveHs(mol)
     conf = mol.GetConformer(id=-1)
     atoms = mol.GetAtoms()
     bonds = mol.GetBonds()
@@ -253,7 +253,7 @@ def mol2vecskeletonpoints(mol):
     return data
 
 def mol2vecskeletonpoints_test(mol):
-    mol = Chem.rdmolops.RemoveHs(mol)
+    # mol = Chem.rdmolops.RemoveHs(mol)
     conf = mol.GetConformer(id=-1)
     atoms = mol.GetAtoms()
     bonds = mol.GetBonds()
@@ -273,7 +273,7 @@ def mol2vecskeletonpoints_test(mol):
     return data
 
 def mol2vecskeletonpointswithdistance(mol):
-    mol = Chem.rdmolops.RemoveHs(mol)
+    # mol = Chem.rdmolops.RemoveHs(mol)
     conf = mol.GetConformer(id=-1)
     atoms = mol.GetAtoms()
     bonds = mol.GetBonds()
@@ -323,12 +323,6 @@ def sort_func(x, y):
             else:
                 return 0
 
-
-confgen = ConformerGeneratorCustom(max_conformers=1,
-                             rmsd_threshold=None,
-                             force_field='mmff',
-                             pool_multiplier=1)
-
 class SetGibbs(gym.Env):
     metadata = {'render.modes': ['human']}
 
@@ -367,7 +361,7 @@ class SetGibbs(gym.Env):
 
         while True:
             obj = self.molecule_choice()
-
+            
             if 'inv_temp' in obj:
                 self.temp_normal = obj['inv_temp']
 
@@ -383,14 +377,16 @@ class SetGibbs(gym.Env):
                 res = AllChem.EmbedMultipleConfs(self.mol, numConfs=1)
                 if not len(res):
                     continue
-                res = Chem.AllChem.MMFFOptimizeMoleculeConfs(self.mol)
+                self.md_sim = MDSimulator(self.mol)
+                res = self.md_sim.optimize_confs(self.mol)
                 self.conf = self.mol.GetConformer(id=0)
 
             else:
                 self.mol = Chem.MolFromMolFile(os.path.join(self.folder_name, obj['molfile']))
                 self.mol = Chem.AddHs(self.mol)
                 self.conf = self.mol.GetConformer(id=0)
-                res = Chem.AllChem.MMFFOptimizeMoleculeConfs(self.mol)
+                self.md_sim = MDSimulator(self.mol)
+                res = self.md_sim.optimize_confs(self.mol)
 
             break
 
@@ -415,7 +411,7 @@ class SetGibbs(gym.Env):
             return 0
         else:
             self.seen.add(tuple(self.action))
-            current = confgen.get_conformer_energies(self.mol)[0]
+            current = self.md_sim.get_conformer_energies(self.mol)[0]
             current = current * self.temp_normal
             return np.exp(-1.0 * (current - self.standard_energy)) / self.total
 
@@ -443,7 +439,7 @@ class SetGibbs(gym.Env):
                 Chem.MolToMolFile(self.mol, 'debug.mol')
                 logging.error('exit with debug.mol')
                 exit(0)
-        Chem.AllChem.MMFFOptimizeMolecule(self.mol, confId=0)
+        self.md_sim.optimize_conf(self.mol, conf_id=0)
 
         self.mol_appends()
 
@@ -503,13 +499,15 @@ class SetGibbs(gym.Env):
                 res = AllChem.EmbedMultipleConfs(self.mol, numConfs=1)
                 if not len(res):
                     continue
-                res = Chem.AllChem.MMFFOptimizeMoleculeConfs(self.mol)
+                self.md_sim = MDSimulator(self.mol)
+                res = self.md_sim.optimize_confs(self.mol)
                 self.conf = self.mol.GetConformer(id=0)
             else:
                 self.mol = Chem.MolFromMolFile(os.path.join(self.folder_name, obj['molfile']))
                 self.mol = Chem.AddHs(self.mol)
                 self.conf = self.mol.GetConformer(id=0)
-                res = Chem.AllChem.MMFFOptimizeMoleculeConfs(self.mol)
+                self.md_sim = MDSimulator(self.mol)
+                res = self.md_sim.optimize_confs(self.mol)
             break
 
         self.episode_reward = 0
@@ -555,7 +553,7 @@ class SetEnergy(SetGibbs):
         else:
             self.seen.add(tuple(self.action))
             print('standard', self.standard_energy)
-            current = confgen.get_conformer_energies(self.mol)[0] * self.temp_normal
+            current = self.md_sim.get_conformer_energies(self.mol)[0] * self.temp_normal
             print('current', current )
             if current - self.standard_energy > 20.0:
                 return 0.0
@@ -578,7 +576,7 @@ class SetEval(SetGibbs):
 
 class SetEvalNoPrune(SetEval):
     def _get_reward(self):
-        current = confgen.get_conformer_energies(self.mol)[0]
+        current = self.md_sim.get_conformer_energies(self.mol)[0]
         current = current * self.temp_normal
         print('standard', self.standard_energy)
         print('current', current)
@@ -589,7 +587,7 @@ class SetEvalNoPrune(SetEval):
 class UniqueSetGibbs(SetGibbs):
     def _get_reward(self):
         self.seen.add(tuple(self.action))
-        current = confgen.get_conformer_energies(self.mol)[0]
+        current = self.md_sim.get_conformer_energies(self.mol)[0]
         current = current * self.temp_normal
         print('standard', self.standard_energy)
         print('current', current)
@@ -602,10 +600,10 @@ class UniqueSetGibbs(SetGibbs):
         return rew
 
     def done_neg_reward(self):
-        before_total = np.exp(-1.0 * (confgen.get_conformer_energies(self.backup_mol) * self.temp_normal - self.standard_energy)).sum()
+        before_total = np.exp(-1.0 * (self.md_sim.get_conformer_energies(self.backup_mol) * self.temp_normal - self.standard_energy)).sum()
         before_conformers = self.backup_mol.GetNumConformers()
-        self.backup_mol = prune_conformers(self.backup_mol, self.pruning_thresh)
-        after_total = np.exp(-1.0 * (confgen.get_conformer_energies(self.backup_mol) * self.temp_normal - self.standard_energy)).sum()
+        self.backup_mol = self.md_sim.prune_conformers(self.backup_mol, self.pruning_thresh)
+        after_total = np.exp(-1.0 * (self.md_sim.get_conformer_energies(self.backup_mol) * self.temp_normal - self.standard_energy)).sum()
         after_conformers = self.backup_mol.GetNumConformers()
         diff = before_total - after_total
         print('diff is ', diff)
@@ -635,7 +633,7 @@ class UniqueSetGibbs(SetGibbs):
 class PruningSetGibbs(SetGibbs):
     def _get_reward(self):
         self.seen.add(tuple(self.action))
-        current = confgen.get_conformer_energies(self.mol)[0]
+        current = self.md_sim.get_conformer_energies(self.mol)[0]
         current = current * self.temp_normal
         print('standard', self.standard_energy)
         print('current', current)
@@ -668,13 +666,13 @@ class PruningSetGibbs(SetGibbs):
         if self.current_step == 1:
             self.total_energy = 0
             self.backup_mol = Chem.Mol(self.mol)
-            self.backup_energys = list(confgen.get_conformer_energies(self.backup_mol))
+            self.backup_energys = list(self.md_sim.get_conformer_energies(self.backup_mol))
             print('num_energys', len(self.backup_energys))
             return
 
         c = self.mol.GetConformer(id=0)
         self.backup_mol.AddConformer(c, assignId=True)
-        self.backup_energys += list(confgen.get_conformer_energies(self.mol))
+        self.backup_energys += list(self.md_sim.get_conformer_energies(self.mol))
         print('num_energys', len(self.backup_energys))
 
 class TestPruningSetGibbs(PruningSetGibbs):
@@ -684,7 +682,7 @@ class TestPruningSetGibbs(PruningSetGibbs):
 class PruningSetGibbsQuick(SetGibbs):
     def _get_reward(self):
         self.seen.add(tuple(self.action))
-        current = confgen.get_conformer_energies(self.mol)[0]
+        current = self.md_sim.get_conformer_energies(self.mol)[0]
         current = current * self.temp_normal
         print('standard', self.standard_energy)
         print('current', current)

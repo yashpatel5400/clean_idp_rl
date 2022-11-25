@@ -26,12 +26,6 @@ lignin_oligomers = []
 temp = 298.15  # K
 rxn_rates = calc_rates(temp, ea_kcal_mol_dict=DEF_E_BARRIER_KCAL_MOL)
 
-
-confgen = ConformerGeneratorCustom(max_conformers=1, 
-                 rmsd_threshold=None, 
-                 force_field='mmff',
-                 pool_multiplier=1)  
-
 if __name__ == '__main__':
 
     for n in tqdm(num_monos):
@@ -70,10 +64,14 @@ if __name__ == '__main__':
         lignin_oligomers.append(mol)
         # save
         fn = save_dir + f"/{sg_ratio}sgr_{max_num_monos}monos.mol"
+        
+        Chem.AllChem.EmbedMolecule(mol)
+        md_sim = MDSimulator(mol)
         Chem.AllChem.EmbedMultipleConfs(mol, numConfs=200, numThreads=-1)
-        Chem.AllChem.MMFFOptimizeMoleculeConfs(mol, numThreads=-1)
-        mol = prune_conformers(mol, 0.05)
-        energys = confgen.get_conformer_energies(mol)
+        md_sim.optimize_confs(mol)
+        mol = md_sim.prune_conformers(mol, 0.05)
+
+        energys = md_sim.get_conformer_energies(mol)
         standard = energys.min()
         total = np.sum(np.exp(-(energys-standard)))
         

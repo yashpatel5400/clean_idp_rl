@@ -13,11 +13,6 @@ from concurrent.futures import ProcessPoolExecutor
 
 from main.utils import *
 
-confgen = ConformerGeneratorCustom(max_conformers=1,
-                 rmsd_threshold=None,
-                 force_field='mmff',
-                 pool_multiplier=1)
-
 def run_lignins_rdkit(tup):
     smiles, energy_norm, gibbs_norm = tup
 
@@ -27,10 +22,11 @@ def run_lignins_rdkit(tup):
     start = time.time()
 
     res = AllChem.EmbedMultipleConfs(mol, numConfs=200, numThreads=-1)
-    res = AllChem.MMFFOptimizeMoleculeConfs(mol)
-    mol = prune_conformers(mol, 0.05)
+    md_sim = MDSimulator(mol)
+    res = md_sim.optimize_confs(mol)
+    mol = md_sim.prune_conformers(mol, 0.05)
 
-    energys = confgen.get_conformer_energies(mol)
+    energys = md_sim.get_conformer_energies(mol)
     total = np.sum(np.exp(-(energys-energy_norm)))
     total /= gibbs_norm
     end = time.time()
@@ -44,7 +40,7 @@ if __name__ == '__main__':
     eleven_alkane_args = ( "[H]C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])(C([H])([H])[H])C([H])([H])C([H])([H])C([H])([H])C([H])(C([H])([H])C([H])([H])[H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])[H]", 7.840935037731404,  13.066560104213275)
     trihexyl_args = ('[H]C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])[C@]([H])(C([H])([H])C([H])([H])[H])C([H])([H])C([H])([H])[C@@]([H])(C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])[H])C([H])([H])C([H])([H])[C@]([H])(C([H])([H])[H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])[H]', 14.88278294332602, 1.2363186365185044)
 
-    args_list = [eleven_alkane_args] * 10
+    args_list = [trihexyl_args] * 10
     with ProcessPoolExecutor() as executor:
         out = executor.map(run_lignins_rdkit, args_list)
 

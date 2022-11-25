@@ -68,8 +68,8 @@ def loaded_policy(model, env):
 if __name__ == '__main__':
     model = RTGNBatch(6, 128, edge_dim=6, point_dim=5)
     
-    model.load_state_dict(torch.load('trained_models/tnet_alkane_eval_final.model', map_location=device))
-
+    model.load_state_dict(torch.load('/home/yppatel/misc/clean_idp_rl/data/PPORecurrentAgent-alkanes train withHs-1000000.model', map_location=device))
+    
     model.to(device)
 
     outputs = []

@@ -8,6 +8,9 @@ import numpy as np
 import random
 from concurrent.futures import ProcessPoolExecutor
 
+import multiprocessing
+from multiprocessing.pool import Pool
+
 from main.utils import *
 
 def create_branched(i):
@@ -28,25 +31,20 @@ def create_branched(i):
         e.AddBond(idx, randidx, Chem.rdchem.BondType.SINGLE)
         numatoms = len(e.GetAtoms())
 
-
     Chem.SanitizeMol(e)
     m = Chem.rdmolops.AddHs(e.GetMol())
+    AllChem.EmbedMolecule(m)
+    md_sim = MDSimulator(m)
+    
     AllChem.EmbedMultipleConfs(m, numConfs=200, numThreads=-1)
-    Chem.AllChem.MMFFOptimizeMoleculeConfs(m, numThreads=-1)
-
-
-    confgen = ConformerGeneratorCustom(max_conformers=1,
-                        rmsd_threshold=None,
-                        force_field='mmff',
-                        pool_multiplier=1)
-
-    m = prune_conformers(m, 0.05)
-
-    energys = confgen.get_conformer_energies(m)
+    md_sim.optimize_confs(m)
+    m = md_sim.prune_conformers(m, 0.05)
+    
+    energys = md_sim.get_conformer_energies(m)
     print(len(TorsionFingerprints.CalculateTorsionLists(m)[0]))
     standard = energys.min()
     total = np.sum(np.exp(-(energys-standard)))
-
+    
     nonring, ring = Chem.TorsionFingerprints.CalculateTorsionLists(m)
     rbn = len(nonring)
     out = {
@@ -58,6 +56,11 @@ def create_branched(i):
     with open(f'gen_out/{rbn}_{i}.json', 'w') as fp:
         json.dump(out, fp)
 
-
-with ProcessPoolExecutor() as executor:
-    executor.map(create_branched, range(10000))
+if __name__ == "__main__":
+    multiprocessing.set_start_method('spawn')
+    p = Pool(multiprocessing.cpu_count())
+    branched_args = [(i,) for i in range(10)]
+    for i in range(10_000):
+        res = p.apply_async(create_branched, (i,))
+    res.get()
+    p.join()

@@ -13,11 +13,6 @@ from concurrent.futures import ProcessPoolExecutor
 
 from main.utils import *
 
-confgen = ConformerGeneratorCustom(max_conformers=1,
-                 rmsd_threshold=None,
-                 force_field='mmff',
-                 pool_multiplier=1)
-
 def load_from_sdf(sdf_file):
     """
     """
@@ -45,10 +40,11 @@ def run_lignins_obabel(tup):
             c = confmol.GetConformer(id=0)
             mol.AddConformer(c, assignId=True)
 
-        res = AllChem.MMFFOptimizeMoleculeConfs(mol)
-        mol = prune_conformers(mol, 0.15)
-
-        energys = (confgen.get_conformer_energies(mol) - energy_norm) * (1/3.97)
+        md_sim = MDSimulator(mol)
+        res = md_sim.optimize_confs(mol)
+        mol = md_sim.prune_conformers(mol, 0.15)
+        
+        energys = (md_sim.get_conformer_energies(mol) - energy_norm) * (1/3.97)
         total = np.sum(np.exp(-energys))
         total /= gibbs_norm
         end = time.time()

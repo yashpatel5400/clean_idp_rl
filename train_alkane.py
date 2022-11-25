@@ -27,7 +27,7 @@ def ppo_feature(args, tag, env_name, model):
     config.tag=tag
     config.env_name = env_name
 
-    config.num_workers = 35
+    config.num_workers = 1
     config.linear_lr_scale = False
 
     lr_base = args.learning_rate if args.learning_rate else 6.32456E-06
@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
     model.to(device)
     set_one_thread()
-    tag = 'alkanes train'
+    tag = 'alkanes train withHs'
 
     env_name = 'TenTorsionSetCurriculumPoints-v0'
 

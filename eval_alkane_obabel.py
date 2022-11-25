@@ -17,11 +17,6 @@ from main.utils import *
 random.seed(0)
 np.random.seed(0)
 
-confgen = ConformerGeneratorCustom(max_conformers=1,
-                 rmsd_threshold=None,
-                 force_field='mmff',
-                 pool_multiplier=1)
-
 def load_from_sdf(sdf_file):
     """
     """
@@ -48,11 +43,11 @@ def run_alkanes_obabel(tup):
         for confmol in inp[1:]:
             c = confmol.GetConformer(id=0)
             mol.AddConformer(c, assignId=True)
+        md_sim = MDSimulator(mol)
+        res = md_sim.optimize_confs(mol)
+        mol = md_sim.prune_conformers(mol, 0.05)
 
-        res = AllChem.MMFFOptimizeMoleculeConfs(mol)
-        mol = prune_conformers(mol, 0.05)
-
-        energys = (confgen.get_conformer_energies(mol) - energy_norm)
+        energys = (md_sim.get_conformer_energies(mol) - energy_norm)
         total = np.sum(np.exp(-energys))
         total /= gibbs_norm
         end = time.time()
@@ -67,7 +62,7 @@ if __name__ == '__main__':
     eleven_alkane_args = ( "[H]C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])(C([H])([H])[H])C([H])([H])C([H])([H])C([H])([H])C([H])(C([H])([H])C([H])([H])[H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])[H]", 7.840935037731404,  13.066560104213275)
     trihexyl_args = ('[H]C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])[C@]([H])(C([H])([H])C([H])([H])[H])C([H])([H])C([H])([H])[C@@]([H])(C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])[H])C([H])([H])C([H])([H])[C@]([H])(C([H])([H])[H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])C([H])([H])[H]', 14.88278294332602, 1.2363186365185044)
 
-    args_list = [eleven_alkane_args] * 10
+    args_list = [trihexyl_args] * 10
     with ProcessPoolExecutor() as executor:
         out = executor.map(run_alkanes_obabel, args_list)
 
