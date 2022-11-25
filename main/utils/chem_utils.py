@@ -45,7 +45,7 @@ class MDSimulator:
         integrator = openmm.VerletIntegrator(0.002 * u.picoseconds)
         platform = openmm.Platform.getPlatformByName("CUDA")
         # start at 1, since we assume 0 is being used by PyTorch, to avoid GPU memory issues
-        assigned_gpu = np.random.randint(1, torch.cuda.device_count())
+        assigned_gpu = np.random.randint(0, torch.cuda.device_count())
         prop = dict(CudaPrecision="mixed", DeviceIndex=f"{assigned_gpu}")
         self.simulator = app.Simulation(omm_top, system, integrator, platform, prop)
         
@@ -89,7 +89,6 @@ class MDSimulator:
         """Returns a list of energies for each conformer in `mol`.
         """
         energies = []
-        AllChem.MMFFSanitizeMolecule(mol)
         for conf in mol.GetConformers():
             energy = self.get_conformer_energy(mol, conf.GetId())
             energies.append(energy)

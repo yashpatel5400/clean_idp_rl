@@ -7,6 +7,9 @@ import numpy as np
 from math import comb, ceil
 import deepchem
 
+import multiprocessing
+from multiprocessing.pool import Pool
+
 import random
 from concurrent.futures import ProcessPoolExecutor
 
@@ -36,12 +39,10 @@ def create_chignolin(mol_fn, out_dir):
     with open(os.path.join(out_dir, f'{os.path.basename(mol_fn).split(".")[0]}.json'), 'w') as fp:
         json.dump(out, fp)
 
-in_dir = "/home/yppatel/misc/clean_idp_rl/chignolin_granular"
-out_dir = "/home/yppatel/misc/clean_idp_rl/chignolin_granular_out"
+def create_chignolin_wrapper(args):
+    return create_chignolin(*args)
 
-generate_from_fastas = True
-if generate_from_fastas:
-    full_fasta = "YYDPETGTWY"
+def generate_pdb_from_fasta(in_dir, full_fasta):
     for i in range(2, len(full_fasta) + 1):
         for starting_point in range(len(full_fasta) - i):
             sub_fasta = full_fasta[starting_point:starting_point+i]
@@ -56,8 +57,20 @@ if generate_from_fastas:
             Chem.rdmolfiles.MolToPDBFile(hydrogenated_mol, dest_fn)
             print(f"Completed: {sub_fasta}")
 
-fns = os.listdir(in_dir)
-full_fns = [os.path.join(in_dir, fn) for fn in fns]
+if __name__ == "__main__":
+    in_dir = "/home/yppatel/misc/clean_idp_rl/chignolin_granular"
+    out_dir = "/home/yppatel/misc/clean_idp_rl/chignolin_granular_out"
 
-for full_fn in full_fns:
-    create_chignolin(full_fn, out_dir)
+    full_fasta = "YYDPETGTWY"
+    generate_from_fastas = True
+    if generate_from_fastas:
+        generate_pdb_from_fasta(in_dir, full_fasta)
+
+    fns = os.listdir(in_dir)
+    full_fns = [(os.path.join(in_dir, fn), out_dir,) for fn in fns]
+
+    multiprocessing.set_start_method('spawn')
+    p = Pool(multiprocessing.cpu_count())
+    p.map(create_chignolin_wrapper, full_fns)
+    p.close()
+    p.join()
