@@ -126,8 +126,8 @@ class RTGNBatch(torch.nn.Module):
         self.action_dim = action_dim
         self.dim = dim
 
-        self.actor = ActorBatchNet(action_dim, dim, edge_dim=edge_dim, num_features=num_features)
-        self.critic = CriticBatchNet(action_dim, dim, edge_dim=edge_dim, num_features=num_features)
+        self.actor = ActorBatchNet(action_dim, dim, edge_dim=edge_dim, num_features=num_features).cuda()
+        self.critic = CriticBatchNet(action_dim, dim, edge_dim=edge_dim, num_features=num_features).cuda()
 
     def forward(self, obs, states=None, action=None):
         data_list = []

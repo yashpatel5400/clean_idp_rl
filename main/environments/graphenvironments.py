@@ -475,7 +475,7 @@ class SetGibbs(gym.Env):
 
     def molecule_choice(self):
         cjson = np.random.choice(self.all_files)
-        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/chignolin_granular", f"{os.path.basename(cjson).split('.')[0]}.pdb")
+        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/chignolin", f"{os.path.basename(cjson).split('.')[0]}.pdb")
         with open(cjson) as fp:
             obj = json.load(fp)
         return obj
@@ -790,7 +790,7 @@ class SetCurriculaExtern(SetGibbs):
             cjson = self.all_files[0]
 
         print(cjson, '\n\n\n\n')
-        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/chignolin_granular", f"{os.path.basename(cjson).split('.')[0]}.pdb")
+        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/chignolin", f"{os.path.basename(cjson).split('.')[0]}.pdb")
         
         with open(cjson) as fp:
             obj = json.load(fp)
@@ -958,10 +958,14 @@ class ChignolinAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, Prunin
     def __init__(self):
         super(ChignolinAllSetPruningLogSkeletonCurriculumLong, self).__init__('chignolin_out/')
 
+class ChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
+    def __init__(self):
+        super(ChignolinPruningSkeletonValidationLong, self).__init__('chignolin_eval_sample/', eval=True)
+
 class ChignolinGranularAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, PruningSetLogGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
         super(ChignolinGranularAllSetPruningLogSkeletonCurriculumLong, self).__init__('chignolin_granular_out/')
 
-class ChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
+class ChignolinGranularPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
-        super(ChignolinPruningSkeletonValidationLong, self).__init__('chignolin_eval_sample/')
+        super(ChignolinGranularPruningSkeletonValidationLong, self).__init__('chignolin_granular_eval/', eval=True)

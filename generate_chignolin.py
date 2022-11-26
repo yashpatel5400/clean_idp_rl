@@ -16,6 +16,12 @@ from concurrent.futures import ProcessPoolExecutor
 from main.utils import *
 
 def create_chignolin(mol_fn, out_dir):
+    result_fn = os.path.join(out_dir, f'{os.path.basename(mol_fn).split(".")[0]}.json')
+    if os.path.exists(result_fn):
+        print(f"Already have: {result_fn}! Skipping...")
+        return
+    print(f"Creating: {result_fn}...")
+
     m = Chem.rdmolfiles.MolFromPDBFile(mol_fn, removeHs=False)
     md_sim = MDSimulatorPDB(mol_fn)
     AllChem.EmbedMultipleConfs(m, numConfs=200, numThreads=-1)
@@ -36,7 +42,7 @@ def create_chignolin(mol_fn, out_dir):
         'total': total
     }
 
-    with open(os.path.join(out_dir, f'{os.path.basename(mol_fn).split(".")[0]}.json'), 'w') as fp:
+    with open(result_fn, 'w') as fp:
         json.dump(out, fp)
 
 def create_chignolin_wrapper(args):
