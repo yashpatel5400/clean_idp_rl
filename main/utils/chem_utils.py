@@ -95,7 +95,7 @@ class MDSimulator:
         
         return np.asarray(energies, dtype=float)
 
-    def prune_conformers(self, mol: Chem.Mol, tfd_thresh: float) -> Chem.Mol:
+    def prune_conformers(self, mol: Chem.Mol, tfd_thresh: float, max_confs = None) -> Chem.Mol:
         """Prunes all the conformers in the molecule.
 
         Removes conformers that have a TFD (torsional fingerprint deviation) lower than
@@ -134,6 +134,10 @@ class MDSimulator:
         # this ensures proper conformer IDs and energy-based ordering
         new = Chem.Mol(mol)
         new.RemoveAllConformers()
+
+        if max_confs is not None:
+            keep = keep[:max_confs]
+
         for i in keep:
             conf = mol.GetConformer(int(i))
             new.AddConformer(conf, assignId=True)

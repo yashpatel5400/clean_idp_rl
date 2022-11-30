@@ -448,6 +448,11 @@ class SetGibbs(gym.Env):
 
         obs = self._get_obs()
         rew = self._get_reward()
+        
+        # molecule sometimes ends up in invalid states: currently "patch up" with no reward, but should find root cause
+        if not np.isfinite(rew):
+            rew = 0
+
         self.episode_reward += rew
 
         print("reward is ", rew)
@@ -956,11 +961,11 @@ class LigninPruningSkeletonEvalSgldFinalLong015Save(UniqueSetGibbs, SetGibbsSkel
 
 class ChignolinAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, PruningSetLogGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
-        super(ChignolinAllSetPruningLogSkeletonCurriculumLong, self).__init__('chignolin_out/')
+        super(ChignolinAllSetPruningLogSkeletonCurriculumLong, self).__init__('chignolin_out/', pruning_thresh=0.15)
 
 class ChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
-        super(ChignolinPruningSkeletonValidationLong, self).__init__('chignolin_eval_sample/', eval=True)
+        super(ChignolinPruningSkeletonValidationLong, self).__init__('chignolin_eval_sample/', eval=True, pruning_thresh=0.15)
 
 class ChignolinGranularAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, PruningSetLogGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):

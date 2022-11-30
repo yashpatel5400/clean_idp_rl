@@ -24,7 +24,7 @@ def create_chignolin(mol_fn, out_dir):
 
     m = Chem.rdmolfiles.MolFromPDBFile(mol_fn, removeHs=False)
     md_sim = MDSimulatorPDB(mol_fn)
-    AllChem.EmbedMultipleConfs(m, numConfs=200, numThreads=-1)
+    AllChem.EmbedMultipleConfs(m, numConfs=1000, numThreads=-1)
     md_sim.optimize_confs(m)
 
     m = md_sim.prune_conformers(m, 0.05)
@@ -64,11 +64,11 @@ def generate_pdb_from_fasta(in_dir, full_fasta):
             print(f"Completed: {sub_fasta}")
 
 if __name__ == "__main__":
-    in_dir = "/home/yppatel/misc/clean_idp_rl/chignolin_granular"
-    out_dir = "/home/yppatel/misc/clean_idp_rl/chignolin_granular_out"
+    in_dir = "/home/yppatel/misc/clean_idp_rl/chignolin"
+    out_dir = "/home/yppatel/misc/clean_idp_rl/chignolin_out"
 
     full_fasta = "YYDPETGTWY"
-    generate_from_fastas = True
+    generate_from_fastas = False
     if generate_from_fastas:
         generate_pdb_from_fasta(in_dir, full_fasta)
 

@@ -11,7 +11,6 @@ from main.environments import Task
 from main.agents import PPORecurrentAgent
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-granular = False
 
 class Curriculum():
     def __init__(self, win_cond=0.7, success_percent=0.7, fail_percent=0.2, min_length=100):
@@ -28,7 +27,7 @@ def ppo_feature(env_name, args, **kwargs):
     config.tag=tag
     config.env_name = env_name
 
-    config.num_workers = 2
+    config.num_workers = 30
     single_process = (config.num_workers == 1)
     config.linear_lr_scale = False
 
@@ -61,10 +60,7 @@ def ppo_feature(env_name, args, **kwargs):
     config.save_interval = config.num_workers * 1000 * 2
     config.eval_interval = config.num_workers * 1000 * 2
     config.eval_episodes = 1
-    if granular:
-        config.eval_env = Task('ChignolinGranularPruningSkeletonValidationLong-v0', seed=random.randint(0,7e4))
-    else:
-        config.eval_env = Task('ChignolinPruningSkeletonValidationLong-v0', seed=random.randint(0,7e4))
+    config.eval_env = Task('ChignolinPruningSkeletonValidationLong-v0', seed=random.randint(0,7e4))
     return PPORecurrentAgent(config)
 
 
@@ -89,13 +85,9 @@ if __name__ == '__main__':
 
     model.to(device)
     set_one_thread()
-
-    if granular:
-        tag = 'train_chignolin_granular'
-        env_name = 'ChignolinGranularAllSetPruningLogSkeletonCurriculumLong-v0'
-    else:
-        tag = 'train_chignolin'
-        env_name = 'ChignolinAllSetPruningLogSkeletonCurriculumLong-v0'
+    
+    tag = 'updated_train_chignolin'
+    env_name = 'ChignolinAllSetPruningLogSkeletonCurriculumLong-v0'
 
     agent = ppo_feature(env_name, args, tag=tag)
     logging.info(env_name)
