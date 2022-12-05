@@ -48,29 +48,37 @@ def create_chignolin(mol_fn, out_dir):
 def create_chignolin_wrapper(args):
     return create_chignolin(*args)
 
-def generate_pdb_from_fasta(in_dir, full_fasta):
-    for i in range(2, len(full_fasta) + 1):
-        for starting_point in range(len(full_fasta) - i):
-            sub_fasta = full_fasta[starting_point:starting_point+i]
-            dest_fn = os.path.join(in_dir, f"{sub_fasta}.pdb")
-            if os.path.exists(dest_fn):
-                print(f"Already have: {sub_fasta}! Skipping...")
-                continue
+def generate_pdb_from_fasta(in_dir, full_fasta, curriculum_stages = None):
+    if curriculum_stages is None:
+        curriculum_stages = []
+        for i in range(2, len(full_fasta) + 1):
+            for starting_point in range(len(full_fasta) - i):
+                curriculum_stages.append((starting_point, starting_point+i))
+    
+    for curriculum_stage in curriculum_stages:
+        starting_point, ending_point = curriculum_stage
+        sub_fasta = full_fasta[starting_point:ending_point]
+        dest_fn = os.path.join(in_dir, f"{sub_fasta}.pdb")
+        if os.path.exists(dest_fn):
+            print(f"Already have: {sub_fasta}! Skipping...")
+            continue
 
-            mol = Chem.rdmolfiles.MolFromFASTA(sub_fasta)
-            AllChem.EmbedMolecule(mol)
-            hydrogenated_mol = deepchem.utils.rdkit_utils.add_hydrogens_to_mol(mol, is_protein=True)
-            Chem.rdmolfiles.MolToPDBFile(hydrogenated_mol, dest_fn)
-            print(f"Completed: {sub_fasta}")
+        mol = Chem.rdmolfiles.MolFromFASTA(sub_fasta)
+        AllChem.EmbedMolecule(mol)
+        hydrogenated_mol = deepchem.utils.rdkit_utils.add_hydrogens_to_mol(mol, is_protein=True)
+        Chem.rdmolfiles.MolToPDBFile(hydrogenated_mol, dest_fn)
+        print(f"Completed: {sub_fasta}")
 
 if __name__ == "__main__":
-    in_dir = "/home/yppatel/misc/clean_idp_rl/chignolin"
-    out_dir = "/home/yppatel/misc/clean_idp_rl/chignolin_out"
+    in_dir = "/home/yppatel/misc/clean_idp_rl/disordered_chignolin"
+    out_dir = "/home/yppatel/misc/clean_idp_rl/disordered_chignolin_out"
 
-    full_fasta = "YYDPETGTWY"
-    generate_from_fastas = False
+    # full_fasta = "YYDPETGTWY"
+    full_fasta = "GYDPETGTWG"
+    generate_from_fastas = True
     if generate_from_fastas:
-        generate_pdb_from_fasta(in_dir, full_fasta)
+        curriculum_stages = [(None, 3), (None, 5), (None, 7), (None, 10)]
+        generate_pdb_from_fasta(in_dir, full_fasta, curriculum_stages = curriculum_stages)
 
     fns = os.listdir(in_dir)
     full_fns = [(os.path.join(in_dir, fn), out_dir,) for fn in fns]

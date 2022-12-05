@@ -450,7 +450,7 @@ class SetGibbs(gym.Env):
         rew = self._get_reward()
         
         # molecule sometimes ends up in invalid states: currently "patch up" with no reward, but should find root cause
-        if not np.isfinite(rew):
+        if not np.isfinite(rew) or rew > 1e15:
             rew = 0
 
         self.episode_reward += rew
@@ -632,11 +632,11 @@ class UniqueSetGibbs(SetGibbs):
             import pickle
             i = 0
             while True:
-                if os.path.exists(f'test_mol{i}.pickle'):
+                if os.path.exists(f'test_mol_540000{i}.pickle'):
                     i += 1
                     continue
                 else:
-                    with open(f'test_mol{i}.pickle', 'wb') as fp:
+                    with open(f'test_mol_540000{i}.pickle', 'wb') as fp:
                         pickle.dump(self.backup_mol, fp)
                     break
 

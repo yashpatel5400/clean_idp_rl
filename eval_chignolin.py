@@ -67,7 +67,7 @@ def loaded_policy(model, env):
 
 if __name__ == '__main__':
     model = RTGNBatch(6, 128, edge_dim=6, point_dim=5)
-    model.load_state_dict(torch.load('/home/yppatel/misc/clean_idp_rl/data/PPORecurrentAgent-train_chignolin-200000.model', map_location=device))
+    model.load_state_dict(torch.load('/home/yppatel/misc/clean_idp_rl/data/PPORecurrentAgent-updated_train_chignolin-540000.model', map_location=device))
 
     outputs = []
     times = []
