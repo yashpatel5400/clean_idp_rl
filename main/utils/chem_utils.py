@@ -133,8 +133,6 @@ class MDSimulator:
             else:
                 discard.append(i)
 
-        print(keep)
-
         # create a new molecule to hold the chosen conformers
         # this ensures proper conformer IDs and energy-based ordering
         new = Chem.Mol(mol)

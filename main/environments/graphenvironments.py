@@ -480,7 +480,7 @@ class SetGibbs(gym.Env):
 
     def molecule_choice(self):
         cjson = np.random.choice(self.all_files)
-        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/chignolin", f"{os.path.basename(cjson).split('.')[0]}.pdb")
+        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/disordered_chignolin", f"{os.path.basename(cjson).split('.')[0]}.pdb")
         with open(cjson) as fp:
             obj = json.load(fp)
         return obj
@@ -795,7 +795,7 @@ class SetCurriculaExtern(SetGibbs):
             cjson = self.all_files[0]
 
         print(cjson, '\n\n\n\n')
-        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/chignolin", f"{os.path.basename(cjson).split('.')[0]}.pdb")
+        self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/disordered_chignolin", f"{os.path.basename(cjson).split('.')[0]}.pdb")
         
         with open(cjson) as fp:
             obj = json.load(fp)
@@ -966,6 +966,14 @@ class ChignolinAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, Prunin
 class ChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
         super(ChignolinPruningSkeletonValidationLong, self).__init__('chignolin_eval_sample/', eval=True, pruning_thresh=0.15)
+
+class DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, PruningSetLogGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
+    def __init__(self):
+        super(DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong, self).__init__('disordered_chignolin_out/', pruning_thresh=0.15)
+
+class DisorderedChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
+    def __init__(self):
+        super(DisorderedChignolinPruningSkeletonValidationLong, self).__init__('disordered_chignolin_eval_sample/', eval=True, pruning_thresh=0.15)
 
 class ChignolinGranularAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, PruningSetLogGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):

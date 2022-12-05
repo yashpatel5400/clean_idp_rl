@@ -60,7 +60,7 @@ def ppo_feature(env_name, args, **kwargs):
     config.save_interval = config.num_workers * 1000 * 2
     config.eval_interval = config.num_workers * 1000 * 2
     config.eval_episodes = 1
-    config.eval_env = Task('ChignolinPruningSkeletonValidationLong-v0', seed=random.randint(0,7e4))
+    config.eval_env = Task('DisorderedChignolinPruningSkeletonValidationLong-v0', seed=random.randint(0,7e4))
     return PPORecurrentAgent(config)
 
 
@@ -86,8 +86,8 @@ if __name__ == '__main__':
     model.to(device)
     set_one_thread()
     
-    tag = 'updated_train_chignolin'
-    env_name = 'ChignolinAllSetPruningLogSkeletonCurriculumLong-v0'
+    tag = 'disordered_chignolin'
+    env_name = 'DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong-v0'
 
     agent = ppo_feature(env_name, args, tag=tag)
     logging.info(env_name)
