@@ -128,10 +128,12 @@ class MDSimulator:
         for i in sort:
             this_tfd = tfd[i][np.asarray(keep, dtype=int)]        
             # discard conformers within the tfd threshold
-            if np.all(this_tfd >= tfd_thresh) and (invalid_thresh is not None and energies[i] > invalid_thresh):
+            if np.all(this_tfd >= tfd_thresh) and (invalid_thresh is None or energies[i] > invalid_thresh):
                 keep.append(i)
             else:
                 discard.append(i)
+
+        print(keep)
 
         # create a new molecule to hold the chosen conformers
         # this ensures proper conformer IDs and energy-based ordering
@@ -147,7 +149,8 @@ class MDSimulator:
 class MDSimulatorPDB(MDSimulator):
     def __init__(self, rd_pdb):
         pdb = app.pdbfile.PDBFile(rd_pdb)
-        forcefield = app.forcefield.ForceField("amber99sbildn.xml", "tip3p.xml")
+        # forcefield = app.forcefield.ForceField("amber99sbildn.xml", "tip3p.xml")
+        forcefield = app.forcefield.ForceField("charmm36.xml", "charmm36/water.xml")
         system = forcefield.createSystem(
             pdb.topology, nonbondedMethod = app.forcefield.NoCutoff, constraints = app.forcefield.HBonds)
         integrator = openmm.VerletIntegrator(0.002 * u.picoseconds)
