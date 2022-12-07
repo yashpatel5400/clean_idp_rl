@@ -632,11 +632,11 @@ class UniqueSetGibbs(SetGibbs):
             import pickle
             i = 0
             while True:
-                if os.path.exists(f'test_mol_540000{i}.pickle'):
+                if os.path.exists(f'trained_disordered_mol{i}.pickle'):
                     i += 1
                     continue
                 else:
-                    with open(f'test_mol_540000{i}.pickle', 'wb') as fp:
+                    with open(f'trained_disordered_mol{i}.pickle', 'wb') as fp:
                         pickle.dump(self.backup_mol, fp)
                     break
 
