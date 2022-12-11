@@ -335,6 +335,7 @@ class SetGibbs(gym.Env):
             temp_normal=1.0, 
             sort_by_size=True,
             pruning_thresh=0.05,
+            output_fn=None,
         ):
         super(SetGibbs, self).__init__()
         self.gibbs_normalize = gibbs_normalize
@@ -342,6 +343,7 @@ class SetGibbs(gym.Env):
         self.all_files = glob.glob(f'{folder_name}*.json')
         self.folder_name = folder_name
         self.active_fn = None
+        self.output_fn = output_fn
 
         if sort_by_size:
             self.all_files.sort(key=os.path.getsize)
@@ -632,11 +634,12 @@ class UniqueSetGibbs(SetGibbs):
             import pickle
             i = 0
             while True:
-                if os.path.exists(f'trained_disordered_mol{i}.pickle'):
+                fn = f'{self.output_fn}{i}.pickle'
+                if os.path.exists(fn):
                     i += 1
                     continue
                 else:
-                    with open(f'trained_disordered_mol{i}.pickle', 'wb') as fp:
+                    with open(fn, 'wb') as fp:
                         pickle.dump(self.backup_mol, fp)
                     break
 
@@ -973,12 +976,4 @@ class DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExte
 
 class DisorderedChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
-        super(DisorderedChignolinPruningSkeletonValidationLong, self).__init__('disordered_chignolin_eval_sample/', eval=True, pruning_thresh=0.15)
-
-class ChignolinGranularAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, PruningSetLogGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
-    def __init__(self):
-        super(ChignolinGranularAllSetPruningLogSkeletonCurriculumLong, self).__init__('chignolin_granular_out/')
-
-class ChignolinGranularPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
-    def __init__(self):
-        super(ChignolinGranularPruningSkeletonValidationLong, self).__init__('chignolin_granular_eval/', eval=True)
+        super(DisorderedChignolinPruningSkeletonValidationLong, self).__init__('disordered_chignolin_eval_sample/', eval=True, pruning_thresh=0.15, output_fn="newly_untrained_chignolin/")
