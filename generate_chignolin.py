@@ -37,7 +37,7 @@ def create_chignolin(mol_fn, out_dir):
     nonring, ring = Chem.TorsionFingerprints.CalculateTorsionLists(m)
     rbn = len(nonring)
     out = {
-        'mol': Chem.MolToSmiles(m, isomericSmiles=False),
+        'molfile': os.path.basename(mol_fn),
         'standard': standard,
         'total': total
     }
@@ -73,7 +73,6 @@ if __name__ == "__main__":
     in_dir = "/home/yppatel/misc/clean_idp_rl/disordered_chignolin"
     out_dir = "/home/yppatel/misc/clean_idp_rl/disordered_chignolin_out"
 
-    # full_fasta = "YYDPETGTWY"
     full_fasta = "GYDPETGTWG"
     generate_from_fastas = True
     if generate_from_fastas:

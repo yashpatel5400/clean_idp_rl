@@ -147,8 +147,7 @@ class MDSimulator:
 class MDSimulatorPDB(MDSimulator):
     def __init__(self, rd_pdb):
         pdb = app.pdbfile.PDBFile(rd_pdb)
-        # forcefield = app.forcefield.ForceField("amber99sbildn.xml", "tip3p.xml")
-        forcefield = app.forcefield.ForceField("charmm36.xml", "charmm36/water.xml")
+        forcefield = app.forcefield.ForceField("amber14/protein.ff14SBonlysc.xml", "implicit/gbn2.xml")
         system = forcefield.createSystem(
             pdb.topology, nonbondedMethod = app.forcefield.NoCutoff, constraints = app.forcefield.HBonds)
         integrator = openmm.VerletIntegrator(0.002 * u.picoseconds)

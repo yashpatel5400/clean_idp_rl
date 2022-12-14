@@ -387,10 +387,17 @@ class SetGibbs(gym.Env):
                 self.conf = self.mol.GetConformer(id=0)
 
             else:
-                self.mol = Chem.MolFromMolFile(os.path.join(self.folder_name, obj['molfile']))
-                self.mol = Chem.AddHs(self.mol)
+                mol_fn = os.path.join(self.folder_name, obj['molfile'])
+                mol_ext = os.path.splitext(mol_fn)[-1]
+                if mol_ext == ".mol":
+                    self.mol = Chem.MolFromMolFile(mol_fn)
+                    self.mol = Chem.AddHs(self.mol)
+                elif mol_ext == ".pdb":
+                    self.mol = Chem.rdmolfiles.MolFromPDBFile(mol_fn, removeHs=False)
+                else:
+                    raise Exception(f"Invalid mol extension used: {mol_ext}")
                 self.conf = self.mol.GetConformer(id=0)
-                self.md_sim = MDSimulator(self.mol)
+                self.md_sim = MDSimulatorPDB(mol_fn)
                 res = self.md_sim.optimize_confs(self.mol)
 
             break
@@ -515,10 +522,17 @@ class SetGibbs(gym.Env):
                 res = self.md_sim.optimize_confs(self.mol)
                 self.conf = self.mol.GetConformer(id=0)
             else:
-                self.mol = Chem.MolFromMolFile(os.path.join(self.folder_name, obj['molfile']))
-                self.mol = Chem.AddHs(self.mol)
+                mol_fn = os.path.join(self.folder_name, obj['molfile'])
+                mol_ext = os.path.splitext(mol_fn)[-1]
+                if mol_ext == ".mol":
+                    self.mol = Chem.MolFromMolFile(mol_fn)
+                    self.mol = Chem.AddHs(self.mol)
+                elif mol_ext == ".pdb":
+                    self.mol = Chem.rdmolfiles.MolFromPDBFile(mol_fn, removeHs=False)
+                else:
+                    raise Exception(f"Invalid mol extension used: {mol_ext}")
                 self.conf = self.mol.GetConformer(id=0)
-                self.md_sim = MDSimulator(self.mol)
+                self.md_sim = MDSimulatorPDB(mol_fn)
                 res = self.md_sim.optimize_confs(self.mol)
             break
 
