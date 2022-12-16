@@ -86,7 +86,7 @@ if __name__ == '__main__':
     model.to(device)
     set_one_thread()
     
-    tag = 'disordered_chignolin'
+    tag = 'updated_disordered_chignolin'
     env_name = 'DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong-v0'
 
     agent = ppo_feature(env_name, args, tag=tag)

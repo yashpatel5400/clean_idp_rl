@@ -144,6 +144,8 @@ class PPORecurrentAgent(BaseAgent):
                     rewbuf = np.array(self.reward_buffer)[-1 * self.curr.min_length:]
                     conds = rewbuf > self.curr.win_cond
 
+                    self.writer.add_scalar('conds_mean', conds.mean(), self.total_steps)
+
                     if conds.mean() > self.curr.success_percent:
                         self.task.env_method('change_level', True)
                         self.reward_buffer.clear()
@@ -204,6 +206,8 @@ class PPORecurrentAgent(BaseAgent):
 
         advantages = (advantages - advantages.mean()) / advantages.std()
 
+        curriculum_stage = self.task.level()
+        self.writer.add_scalar('curriculum_stage', np.mean(curriculum_stage), self.total_steps)
         self.writer.add_scalar('advantages', advantages.mean(), self.total_steps)
 
         states = []

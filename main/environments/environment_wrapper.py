@@ -73,3 +73,6 @@ class Task:
 
     def step(self, actions):
         return self.env.step(actions)
+
+    def level(self):
+        return self.env.get_attr("choice_ind")

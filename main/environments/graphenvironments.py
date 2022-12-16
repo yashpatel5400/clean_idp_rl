@@ -990,4 +990,4 @@ class DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExte
 
 class DisorderedChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
-        super(DisorderedChignolinPruningSkeletonValidationLong, self).__init__('disordered_chignolin_eval_sample/', eval=True, pruning_thresh=0.15, output_fn="newly_untrained_chignolin/")
+        super(DisorderedChignolinPruningSkeletonValidationLong, self).__init__('disordered_chignolin_eval_sample/', eval=True, pruning_thresh=0.15, output_fn="trained_360000/")

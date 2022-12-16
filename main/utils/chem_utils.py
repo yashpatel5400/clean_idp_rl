@@ -156,11 +156,17 @@ class MDSimulatorPDB(MDSimulator):
         system = forcefield.createSystem(
             pdb.topology, nonbondedMethod = app.forcefield.NoCutoff, constraints = app.forcefield.HBonds)
         integrator = openmm.VerletIntegrator(0.002 * u.picoseconds)
-        platform = openmm.Platform.getPlatformByName("CUDA")
-        # start at 1, since we assume 0 is being used by PyTorch, to avoid GPU memory issues
-        assigned_gpu = np.random.randint(1, torch.cuda.device_count())
-        prop = dict(CudaPrecision="mixed", DeviceIndex=f"{assigned_gpu}")
-        self.simulator = app.Simulation(pdb.topology, system, integrator, platform, prop)
+        
+        use_cuda = True
+        if use_cuda:
+            platform = openmm.Platform.getPlatformByName("CUDA")
+            # start at 1, since we assume 0 is being used by PyTorch, to avoid GPU memory issues
+            assigned_gpu = np.random.randint(1, torch.cuda.device_count())
+            prop = dict(CudaPrecision="mixed", DeviceIndex=f"{assigned_gpu}")
+            self.simulator = app.Simulation(pdb.topology, system, integrator, platform, prop)
+        else:
+            platform = openmm.Platform.getPlatformByName("CPU")
+            self.simulator = app.Simulation(pdb.topology, system, integrator, platform)
 
 # class ConformerGeneratorCustom(conformers.ConformerGenerator):
 #     # pruneRmsThresh=-1 means no pruning done here
