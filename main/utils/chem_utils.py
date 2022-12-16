@@ -63,7 +63,12 @@ class MDSimulator:
         if conf_id is None:
             conf_id = mol.GetNumConformers() - 1
         self._init_simulator(mol, conf_id)
-        self.simulator.minimizeEnergy(maxIterations=500)
+        
+        # HACK: sometimes "openmm.OpenMMException: Particle coordinate is nan" so we skip those cases
+        try:
+            self.simulator.minimizeEnergy(maxIterations=500)
+        except:
+            return
 
         # OpenMM returns all of its positions in nm, so we have to convert back to Angstroms for RDKit
         optimized_positions_nm = self.simulator.context.getState(getPositions=True).getPositions()
