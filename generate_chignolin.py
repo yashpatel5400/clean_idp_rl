@@ -76,7 +76,12 @@ if __name__ == "__main__":
     full_fasta = "GYDPETGTWG"
     generate_from_fastas = True
     if generate_from_fastas:
-        curriculum_stages = [(None, 3), (None, 5), (None, 7), (None, 10)]
+        curriculum_stages_lens = [3, 5, 7, 10]
+        curriculum_stages = [
+            (i, i+curriculum_stages_len)
+            for curriculum_stages_len in curriculum_stages_lens
+            for i in range(len(full_fasta) - curriculum_stages_len + 1)
+        ]
         generate_pdb_from_fasta(in_dir, full_fasta, curriculum_stages = curriculum_stages)
 
     fns = os.listdir(in_dir)

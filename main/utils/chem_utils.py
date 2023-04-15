@@ -5,7 +5,7 @@ import torch
 import logging
 import time
 from tqdm import tqdm
-import mdtraj as md
+# import mdtraj as md
 
 import openmm
 import openmm.app as app
