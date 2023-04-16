@@ -12,7 +12,7 @@ import logging
 import torch
 import pandas as pd
 import time
-import gym
+import gymnasium as gym
 
 import torch
 
@@ -346,7 +346,8 @@ class SetGibbs(gym.Env):
         self.output_fn = output_fn
 
         if sort_by_size:
-            self.all_files.sort(key=os.path.getsize)
+            self.all_files.sort(key=lambda x : len(x))
+            # self.all_files.sort(key=os.path.getsize)
         else:
             self.all_files.sort()
 
@@ -405,7 +406,12 @@ class SetGibbs(gym.Env):
         self.everseen = set()
         nonring, ring = TorsionFingerprints.CalculateTorsionLists(self.mol)
         self.nonring = [list(atoms[0]) for atoms, ang in nonring]
-        logging.info(f'rbn: {len(self.nonring)}')
+        
+        num_torsions = len(self.nonring)
+        logging.info(f'rbn: {num_torsions}')
+        # action and observation space are the same: rotations of Ca-backbone torsions
+        self.observation_space = gym.spaces.MultiDiscrete([6] * num_torsions)
+        self.action_space = gym.spaces.MultiDiscrete([6] * num_torsions)
 
         self.delta_t = []
         self.current_step = 0
@@ -473,8 +479,9 @@ class SetGibbs(gym.Env):
             info['repeats'] = self.repeats
 
         info = self.info(info)
+        truncated = False
 
-        return obs, rew, self.done, info
+        return obs, rew, self.done, truncated, info
 
     @property
     def done(self):
@@ -804,12 +811,16 @@ class SetCurriculaExtern(SetGibbs):
         return info
 
     def molecule_choice(self):
+        unique_lens = sorted(list(set([len(fn) for fn in self.all_files])))
+        separated_fns = [[fn for fn in self.all_files if len(fn) == unique_len] for unique_len in unique_lens]
+        
         if self.choice_ind != 1:
-            p = 0.5 * np.ones(self.choice_ind) / (self.choice_ind - 1)
-            p[-1] = 0.5
-            cjson = np.random.choice(self.all_files[0:self.choice_ind], p=p)
+            len_p = 0.5 * np.ones(self.choice_ind) / (self.choice_ind - 1)
+            len_p[-1] = 0.5
+            stage_set = np.random.choice(list(range(self.choice_ind)), p=len_p)
+            cjson = np.random.choice(separated_fns[stage_set])
         else:
-            cjson = self.all_files[0]
+            cjson = np.random.choice(separated_fns[0])
 
         print(cjson, '\n\n\n\n')
         self.active_fn = os.path.join("/home/yppatel/misc/clean_idp_rl/disordered_chignolin", f"{os.path.basename(cjson).split('.')[0]}.pdb")
@@ -820,11 +831,13 @@ class SetCurriculaExtern(SetGibbs):
 
     def change_level(self, up_or_down):
         if up_or_down:
-            self.choice_ind *= 2
+            # self.choice_ind *= 2
+            self.choice_ind += 1
 
         else:
             if self.choice_ind != 1:
-                self.choice_ind = int(self.choice_ind / 2)
+                # self.choice_ind = int(self.choice_ind / 2)
+                self.choice_ind -= 1
 
         self.choice_ind = min(self.choice_ind, len(self.all_files))
 
@@ -986,8 +999,8 @@ class ChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoi
 
 class DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExtern, PruningSetLogGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
-        super(DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong, self).__init__('disordered_chignolin_out/', pruning_thresh=0.15)
+        super(DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong, self).__init__('disordered_chignolin/', pruning_thresh=0.15)
 
 class DisorderedChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
-        super(DisorderedChignolinPruningSkeletonValidationLong, self).__init__('disordered_chignolin_eval_sample/', eval=True, pruning_thresh=0.15, output_fn="trained_360000/")
+        super(DisorderedChignolinPruningSkeletonValidationLong, self).__init__('disordered_chignolin_eval/', eval=True, pruning_thresh=0.15, output_fn="trained_360000/")

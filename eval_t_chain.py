@@ -48,7 +48,7 @@ def loaded_policy(model, env):
 
         choice = prediction['a']
         step += 1
-        state, rew, done, info = env.step(to_np(choice))
+        state, rew, done, _, info = env.step(to_np(choice))
         total_reward += float(rew)
 
     if isinstance(info, tuple):

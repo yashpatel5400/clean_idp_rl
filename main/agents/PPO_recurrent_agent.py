@@ -65,7 +65,7 @@ class PPORecurrentAgent(BaseAgent):
             current_step += 1
             action, rstates = self.eval_step(state, done, rstates)
             done = False
-            state, reward, done, info = env.step(to_np(action))
+            state, reward, done, _, info = env.step(to_np(action))
             ret = info[0]['episodic_return']
         return ret
 
@@ -102,7 +102,7 @@ class PPORecurrentAgent(BaseAgent):
 
                 #step the environment with the action determined by the prediction
                 start = time.time()
-                next_states, rewards, terminals, info = self.task.step(to_np(prediction['a']))
+                next_states, rewards, terminals, _, info = self.task.step(to_np(prediction['a']))
                 end = time.time()
 
                 for idx, infoDict in enumerate(info):

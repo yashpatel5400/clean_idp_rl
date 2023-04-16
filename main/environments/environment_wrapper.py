@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import numpy as np
 import logging
 
@@ -15,14 +15,14 @@ class OriginalReturnWrapper(gym.Wrapper):
         self.total_rewards = 0
 
     def step(self, action):
-        obs, reward, done, info = self.env.step(action)
+        obs, reward, done, truncated, info = self.env.step(action)
         self.total_rewards += reward
         if done:
             info['episodic_return'] = self.total_rewards
             self.total_rewards = 0
         else:
             info['episodic_return'] = None
-        return obs, reward, done, info
+        return obs, reward, done, truncated, info
 
     # def change_level(self, level):
     #     return self.env.change_level(level)
