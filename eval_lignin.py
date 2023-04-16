@@ -50,7 +50,7 @@ def loaded_policy(model, env):
         choice = prediction['a']
         step += 1
         print('step', step)
-        state, rew, done_, _, info = env.step(to_np(choice))
+        state, rew, done_, info = env.step(to_np(choice))
         total_reward += float(rew)
         print('rew', rew)
         print('total_reward', total_reward)

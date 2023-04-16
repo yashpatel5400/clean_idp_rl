@@ -12,7 +12,7 @@ import logging
 import torch
 import pandas as pd
 import time
-import gymnasium as gym
+import gym
 
 import torch
 
@@ -410,8 +410,6 @@ class SetGibbs(gym.Env):
         num_torsions = len(self.nonring)
         logging.info(f'rbn: {num_torsions}')
         # action and observation space are the same: rotations of Ca-backbone torsions
-        self.observation_space = gym.spaces.MultiDiscrete([6] * num_torsions)
-        self.action_space = gym.spaces.MultiDiscrete([6] * num_torsions)
 
         self.delta_t = []
         self.current_step = 0
@@ -479,9 +477,8 @@ class SetGibbs(gym.Env):
             info['repeats'] = self.repeats
 
         info = self.info(info)
-        truncated = False
 
-        return obs, rew, self.done, truncated, info
+        return obs, rew, self.done, info
 
     @property
     def done(self):
@@ -1003,4 +1000,4 @@ class DisorderedChignolinAllSetPruningLogSkeletonCurriculumLong(SetCurriculaExte
 
 class DisorderedChignolinPruningSkeletonValidationLong(UniqueSetGibbs, SetGibbsSkeletonPoints, LongEndingSetGibbs):
     def __init__(self):
-        super(DisorderedChignolinPruningSkeletonValidationLong, self).__init__('disordered_chignolin_eval/', eval=True, pruning_thresh=0.15, output_fn="trained_360000/")
+        super(DisorderedChignolinPruningSkeletonValidationLong, self).__init__('disordered_chignolin_eval/', eval=True, pruning_thresh=0.15, output_fn="trained_chignolin/")

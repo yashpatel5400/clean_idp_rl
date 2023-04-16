@@ -1,6 +1,6 @@
 from .graphenvironments import *
 from rdkit import Chem
-import gymnasium as gym
+import gym
 
 class BestGibbs(gym.Env):
     metadata = {'render.modes': ['human']}
